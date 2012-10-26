@@ -23,3 +23,5 @@ end
 gem 'jquery-rails'
 
 gem "queue_classic", "2.0.1"
+
+gem 'clockwork'
