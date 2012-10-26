@@ -1,3 +1,4 @@
 web: rails s
-status_worker: env QUEUE="transaction_status" rake jobs:work
+mws_worker1: env QUEUE="mws" rake jobs:work
+mws_worker2: env QUEUE="mws" rake jobs:work
 clock: bundle exec clockwork config/clock.rb
