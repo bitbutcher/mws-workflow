@@ -17,3 +17,8 @@
 
 .env
 .env_*
+
+*.swp
+*.swo
+.rvmrc
+
