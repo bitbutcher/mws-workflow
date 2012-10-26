@@ -4,9 +4,11 @@ require 'clockwork'
 module Clockwork
   handler do |job|
     puts "Running #{job}"
-    job.run
+    job.enqueue
   end
   
   # The schedule:
-  every 1.minute, Jobs::GetTransactionStatus
+  every 45.seconds, Jobs::PollFeeds
+  every 1.minute, Jobs::GetFeedResult
+  every 2.minutes, Jobs::SubmitFeed
 end
