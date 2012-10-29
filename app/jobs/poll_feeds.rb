@@ -6,7 +6,6 @@ class PollFeeds < Job
       Mws.connection.feeds.list(ids: tasks.map { | task | task.transaction_id }).each do | info |
         if info.status == :done
           task = tasks.find { | task | task.transaction_id == info.id.to_i }
-          puts task
           task.status = :complete
           task.save
         end
