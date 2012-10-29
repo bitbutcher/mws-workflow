@@ -10,9 +10,26 @@ class FeedTask < ActiveRecord::Base
 
   belongs_to :queue, class_name: 'FeedQueue'
 
-  validates_presence_of :queue, :sku, :operation_type, :body
-  validates_inclusion_of :operation_type, in: Mws::Apis::Feeds::Feed::OperationType.syms
-  validates_inclusion_of :state, in: [ :pending, :enqueued, :dequeued, :complete, :failed ]
+  validates :queue,
+    presence: true
+
+  validates :sku
+    presence: true
+
+  validates :operation_type,
+    presence: true,
+    inclusion: {
+      in: Mws::Apis::Feeds::Feed::OperationType.syms
+    }
+
+  validates :state,
+    presence: true,
+    inclusion: {
+      in: [ :pending, :enqueued, :dequeued, :complete, :failed ]
+    }
+
+  validates :body,
+    presence: true
 
   def operation_type
     res = read_attribute(:operation_type)

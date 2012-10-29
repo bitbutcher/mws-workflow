@@ -6,9 +6,31 @@ class FeedQueue < ActiveRecord::Base
 
   has_many :tasks, class_name: 'FeedTask', foreign_key: :queue_id
 
-  validates_presence_of :priority, :name, :merchant
-  validates_inclusion_of :name, in: Mws::Apis::Feeds::Feed::Type.syms
-  validates_uniqueness_of :name, scope: [ :merchant ]
+  validates :name, 
+    presence: true,
+    inclusion: { 
+      in: Mws::Apis::Feeds::Feed::Type.syms 
+    }, 
+    uniqueness: { 
+      scope: [ :merchant ] 
+    }
+
+  validates :merchant,
+    presence: true
+
+  validates :priority,
+    presence: true,
+    numericality: {
+      only_integer: true,
+      greater_than: 0
+    }
+
+  validates :batch_size,
+    presence: true,
+    numericality: {
+      only_integer: true,
+      greater_than: 0
+    }
 
   def name
     res = read_attribute(:name)
