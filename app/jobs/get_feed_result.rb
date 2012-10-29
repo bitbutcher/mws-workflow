@@ -1,10 +1,6 @@
-module Jobs
+class GetFeedResult < Job
 
-  class GetFeedResult < Job
-
-    def perform
-    end
-
+  def perform
   end
 
 end

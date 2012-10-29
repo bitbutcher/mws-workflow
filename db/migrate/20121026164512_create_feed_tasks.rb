@@ -7,6 +7,7 @@ class CreateFeedTasks < ActiveRecord::Migration
       table.text :body, null: false
       table.string :state, null: false, default: :pending
       table.datetime :enqueued, null: true
+      table.integer :transaction_id, null: true, :limit => 8
       table.timestamps
     end
     execute <<-SQL

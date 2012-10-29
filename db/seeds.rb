@@ -5,3 +5,36 @@
 #
 #   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
 #   Mayor.create(name: 'Emanuel', city: cities.first)
+
+FeedQueue.create([
+  {
+    name: :catalog,
+    priority: 1,
+    batch_size: 100,
+    merchant: ENV['MWS_MERCHANT']
+  },
+  {
+    name: :image,
+    priority: 1,
+    batch_size: 100,
+    merchant: ENV['MWS_MERCHANT']
+  },
+  {
+    name: :price,
+    priority: 1,
+    batch_size: 100,
+    merchant: ENV['MWS_MERCHANT']
+  },
+  {
+    name: :shipping,
+    priority: 1,
+    batch_size: 100,
+    merchant: ENV['MWS_MERCHANT']
+  },
+  {
+    name: :inventory,
+    priority: 1,
+    batch_size: 100,
+    merchant: ENV['MWS_MERCHANT']
+  }
+])

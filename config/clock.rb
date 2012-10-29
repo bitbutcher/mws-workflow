@@ -8,7 +8,7 @@ module Clockwork
   end
   
   # The schedule:
-  every 45.seconds, Jobs::PollFeeds
-  every 1.minute, Jobs::GetFeedResult
-  every 2.minutes, Jobs::SubmitFeed
+  every 45.seconds, PollFeeds
+  every 1.minute, GetFeedResult
+  every 2.minutes, SubmitFeed
 end

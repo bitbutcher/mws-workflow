@@ -19,6 +19,7 @@ module MwsWorkflow
     # config.autoload_paths += %W(#{config.root}/extras)
     config.autoload_paths += %W(
       #{config.root}/lib
+      #{config.root}/app/jobs
       #{config.root}/app/observers
     )
 

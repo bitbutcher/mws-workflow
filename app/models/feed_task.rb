@@ -3,7 +3,7 @@ require 'nokogiri'
 
 class FeedTask < ActiveRecord::Base
 
-  attr_accessible :queue, :sku, :operation_type, :body, :state, :enqueued
+  attr_accessible :queue, :sku, :operation_type, :body, :state, :enqueued, :transaction_id
 
   has_many :feed_task_dependencies, foreign_key: :task_id
   has_many :dependencies, through: :feed_task_dependencies, source: :dependency

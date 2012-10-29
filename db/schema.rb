@@ -16,6 +16,7 @@ ActiveRecord::Schema.define(:version => 20121026165606) do
   create_table "feed_queues", :force => true do |t|
     t.string   "name",       :null => false
     t.integer  "priority",   :null => false
+    t.integer  "batch_size", :null => false
     t.string   "merchant",   :null => false
     t.datetime "last_drain"
     t.datetime "created_at", :null => false
@@ -30,14 +31,15 @@ ActiveRecord::Schema.define(:version => 20121026165606) do
   end
 
   create_table "feed_tasks", :force => true do |t|
-    t.string   "sku",                                   :null => false
-    t.integer  "queue_id",                              :null => false
-    t.string   "operation_type",                        :null => false
-    t.text     "body",                                  :null => false
-    t.string   "state",          :default => "pending", :null => false
+    t.string   "sku",                                                :null => false
+    t.integer  "queue_id",                                           :null => false
+    t.string   "operation_type",                                     :null => false
+    t.text     "body",                                               :null => false
+    t.string   "state",                       :default => "pending", :null => false
     t.datetime "enqueued"
-    t.datetime "created_at",                            :null => false
-    t.datetime "updated_at",                            :null => false
+    t.integer  "transaction_id", :limit => 8
+    t.datetime "created_at",                                         :null => false
+    t.datetime "updated_at",                                         :null => false
   end
 
   create_table "queue_classic_jobs", :force => true do |t|

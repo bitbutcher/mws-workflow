@@ -1,11 +1,17 @@
-module Jobs
+class PollFeeds < Job
 
-  class PollFeeds < Job
-
-    def perform
-      Mws.connection.feeds.list.each { | info | Rails.info info.inspect }
+  def perform
+    tasks = FeedTask.where state: :dequeued
+    unless tasks.empty?
+      Mws.connection.feeds.list(ids: tasks.map { | task | task.transaction_id }).each do | info |
+        if info.status == :done
+          task = tasks.find { | task | task.transaction_id == info.id.to_i }
+          puts task
+          task.status = :complete
+          task.save
+        end
+      end
     end
-
   end
 
 end
