@@ -7,6 +7,10 @@ gem 'jquery-rails'
 gem 'queue_classic', '2.0.1'
 gem 'clockwork'
 gem 'mws',  git: 'git://github.com/devmode/mws.git'
+gem 'haml'
+gem 'therubyracer'
+gem 'less-rails'
+gem 'less-rails-bootstrap'
 
 group :assets do
   gem 'sass-rails',   '~> 3.2.3'

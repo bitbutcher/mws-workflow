@@ -1,0 +1,21 @@
+.row-fluid
+  %table.table.table-striped.table-bordered
+    %thead
+      %tr
+        %th Queue Name
+        %th Sku
+        %th Operation
+        %th Transaction
+        %th Message
+        %th State
+    %tbody
+      - @tasks.each do |task|
+        %tr
+          %td=task.queue.name
+          %td=task.sku
+          %td=task.operation_type
+          %td=task.transaction.identifier unless task.transaction.nil?
+          %td=task.index unless task.index.nil?
+          %td=task.state
+          
+

@@ -1,8 +1,8 @@
 class FeedTransaction < ActiveRecord::Base
 
-  States = [ :running, :complete, :successful, :has_failures ]
+  States = [ :running, :complete, :successful, :failed, :has_failures ]
 
-  attr_accessible :identifier, :state
+  attr_accessible :identifier, :state, :failure
 
   has_many :tasks, class_name: 'FeedTask', foreign_key: :transaction_id
 
@@ -21,9 +21,7 @@ class FeedTransaction < ActiveRecord::Base
     }
 
   States.each do | state |
-    scope state, -> {
-      where state: state
-    }
+    scope state, -> { where state: state }
   end
 
   def state

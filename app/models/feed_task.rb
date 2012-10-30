@@ -66,9 +66,26 @@ class FeedTask < ActiveRecord::Base
     res and res.to_sym
   end
 
+  def state
+    if transaction 
+      failure ? :failed : transaction.state
+    else 
+      dependencies.empty? ? :ready : :pending
+    end
+  end
+
   def to_xml(name=nil, parent=nil)
     parent << body if parent
     return body
+  end
+
+  def self.enqueue(queue, resource, operation_type, *dependencies)
+    task = new sku: resource.sku, queue: queue, operation_type: operation_type, body: resource.to_xml
+    dependencies.each do | dependency |
+      task.dependencies << dependency
+    end
+    task.save
+    task
   end
 
 end

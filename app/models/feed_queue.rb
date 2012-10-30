@@ -37,9 +37,23 @@ class FeedQueue < ActiveRecord::Base
 
   scope :type, ->(type) { where(feed_type: type) }
 
+  scope :merchant, ->(merchant) { where(merchant: merchant) }
+
   def feed_type
     res = read_attribute(:feed_type)
     res and res.to_sym
+  end
+
+  def enqueue(resource, operation_type, *dependencies)
+    FeedTask.enqueue self, resource, operation_type, *dependencies
+  end
+
+  def enqueue_update(resource, *dependencies)
+    enqueue resource, :update, *dependencies
+  end
+
+  def enqueue_delete(resource, *dependencies)
+    enqueue resource, :delete, *dependencies
   end
 
 end

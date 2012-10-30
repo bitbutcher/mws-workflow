@@ -43,57 +43,58 @@ FeedQueue.create!([
 
 FeedTask.transaction do
 
-  product_queue = FeedQueue.type(:product).first
-  product = Feeds::Product.new('2634897') do
-    tax_code 'A_GEN_TAX'
-    name "Rocketfish\u2122 6' In-Wall HDMI Cable"
-    brand "Rocketfish\u2122"
-    description "This 6' HDMI cable supports signals up to 1080p and most screen refresh rates to ensure stunning image clarity with reduced motion blur in fast-action scenes."
-    bullet_point 'Compatible with HDMI components'
-    bullet_point'Connects an HDMI source to an HDTV or projector with an HDMI input'
-    bullet_point 'Up to 15 Gbps bandwidth'
-    bullet_point'In-wall rated' 
-    msrp 49.99, :usd
-    category :ce
-    details {
-      cable_or_adapter {
-        cable_length {
-          length 6
-          unit_of_measure :feet
+  product_task = FeedQueue.type(:product).first.enqueue_update(
+    Feeds::Product.new('2634897') do
+      tax_code 'A_GEN_TAX'
+      name "Rocketfish\u2122 6' In-Wall HDMI Cable"
+      brand "Rocketfish\u2122"
+      description "This 6' HDMI cable supports signals up to 1080p and most screen refresh rates to ensure stunning image clarity with reduced motion blur in fast-action scenes."
+      bullet_point 'Compatible with HDMI components'
+      bullet_point'Connects an HDMI source to an HDTV or projector with an HDMI input'
+      bullet_point 'Up to 15 Gbps bandwidth'
+      bullet_point'In-wall rated' 
+      msrp 49.99, :usd
+      category :ce
+      details {
+        cable_or_adapter {
+          cable_length {
+            length 6
+            unit_of_measure :feet
+          }
         }
       }
-    }
-  end
-  product_task = FeedTask.create sku: '2634897', queue: product_queue, operation_type: :update, body: product.to_xml.to_s
+    end
+  )
 
-  price_queue = FeedQueue.type(:price).first
-  price = Feeds::PriceListing.new('2634897', 49.99).on_sale(29.99, Time.now, 3.months.from_now)
-  price_task = FeedTask.create sku: '2634897', queue: price_queue, operation_type: :update, body: price.to_xml.to_s
-  price_task.dependencies << product_task
+  price_task = FeedQueue.type(:price).first.enqueue_update(
+    Feeds::PriceListing.new('2634897', 49.99).on_sale(29.99, Time.now, 3.months.from_now),
+    product_task
+  )
 
   image_queue = FeedQueue.type(:image).first
-  main_image = Feeds::ImageListing.new('2634897', 'http://images.bestbuy.com/BestBuy_US/images/products/2634/2634897_sa.jpg', 'Main')
-  main_image_task = FeedTask.create sku: '2634897', queue: image_queue, operation_type: :update, body: main_image.to_xml.to_s
-  main_image_task.dependencies << product_task
-  alt_image = Feeds::ImageListing.new('2634897', 'http://images.bestbuy.com/BestBuy_US/images/products/2634/2634897cv1a.jpg', 'PT1')
-  alt_image_task = FeedTask.create sku: '2634897', queue: image_queue, operation_type: :update, body: alt_image.to_xml.to_s
-  alt_image_task.dependencies << product_task
-
-  shipping_queue = FeedQueue.type(:override).first
-  shipping = Feeds::Shipping.new('2634897') {
-    restricted :alaska_hawaii, :standard, :po_box
-    adjust 4.99, :usd, :continental_us, :standard
-    replace 11.99, :usd, :continental_us, :expedited, :street
-  }
-  shipping_task = FeedTask.create sku: '2634897', queue: shipping_queue, operation_type: :update, body: shipping.to_xml.to_s
-  shipping_task.dependencies << product_task
-
-  inventory_queue = FeedQueue.type(:inventory).first
-  inventory = Feeds::Inventory.new('2634897', quantity: 10, fulfillment_type: :mfn)
-  inventory_task = FeedTask.create sku: '2634897', queue: inventory_queue, operation_type: :update, body: inventory.to_xml.to_s
-  inventory_task.dependencies << price_task
-  inventory_task.dependencies << main_image_task
-  inventory_task.dependencies << alt_image_task
-  inventory_task.dependencies << shipping_task
-
+  main_image_task = image_queue.enqueue_update(
+    Feeds::ImageListing.new('2634897', 'http://images.bestbuy.com/BestBuy_US/images/products/2634/2634897_sa.jpg', 'Main'), 
+    product_task
+  )
+  alt_image_task = image_queue.enqueue_update(
+    Feeds::ImageListing.new('2634897', 'http://images.bestbuy.com/BestBuy_US/images/products/2634/2634897cv1a.jpg', 'PT1'), 
+    product_task
+  )
+  
+  shipping_task = FeedQueue.type(:override).first.enqueue_update(
+    Feeds::Shipping.new('2634897') {
+      restricted :alaska_hawaii, :standard, :po_box
+      adjust 4.99, :usd, :continental_us, :standard
+      replace 11.99, :usd, :continental_us, :expedited, :street
+    }, 
+    product_task
+  )
+  
+  FeedQueue.type(:inventory).first.enqueue_update(
+    Feeds::Inventory.new('2634897', quantity: 10, fulfillment_type: :mfn),
+    price_task,
+    main_image_task,
+    alt_image_task,
+    shipping_task
+  )
 end if FeedTask.all.empty?

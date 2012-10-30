@@ -46,6 +46,7 @@ ActiveRecord::Schema.define(:version => 20121026165606) do
   create_table "feed_transactions", :force => true do |t|
     t.integer  "identifier", :limit => 8, :null => false
     t.string   "state",                   :null => false
+    t.string   "failure"
     t.datetime "created_at",              :null => false
     t.datetime "updated_at",              :null => false
   end
