@@ -1,14 +1,13 @@
 class PollFeeds < Job
 
   def perform
-    tasks = FeedTask.where state: :dequeued
-    unless tasks.empty?
-      Mws.connection.feeds.list(ids: tasks.map { | task | task.transaction_id }).each do | info |
-        if info.status == :done
-          task = tasks.find { | task | task.transaction_id == info.id.to_i }
-          task.status = :complete
-          task.save
-        end
+    txs = FeedTransaction.where state: :running
+    return if txs.empty?
+    Mws.connection.feeds.list(ids: txs.map { | tx | tx.identifier }).each do | info |
+      if info.status == :done
+        tx = txs.find { |tx| tx.identifier == info.id.to_i }
+        tx.state = :complete
+        tx.save
       end
     end
   end

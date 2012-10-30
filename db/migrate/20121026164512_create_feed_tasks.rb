@@ -5,9 +5,9 @@ class CreateFeedTasks < ActiveRecord::Migration
       table.integer :queue_id, null: false
       table.string :operation_type, null: false
       table.text :body, null: false
-      table.string :state, null: false, default: :pending
-      table.datetime :enqueued, null: true
-      table.integer :transaction_id, null: true, :limit => 8
+      table.integer :transaction_id, null: true
+      table.integer :index, null: true
+      table.text :failure, null: true
       table.timestamps
     end
     execute <<-SQL
@@ -15,6 +15,12 @@ class CreateFeedTasks < ActiveRecord::Migration
         ADD CONSTRAINT fk_feed_task_queue
         FOREIGN KEY (queue_id)
         REFERENCES feed_queues(id)
+    SQL
+    execute <<-SQL
+      ALTER TABLE feed_tasks
+        ADD CONSTRAINT fk_feed_task_transaction
+        FOREIGN KEY (transaction_id)
+        REFERENCES feed_transactions(id)
     SQL
   end
   def down

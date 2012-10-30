@@ -2,11 +2,17 @@ require 'mws'
 
 class FeedQueue < ActiveRecord::Base
 
-  attr_accessible :priority, :name, :merchant, :batch_size
+  attr_accessible :name, :merchant, :feed_type, :priority, :batch_size
 
   has_many :tasks, class_name: 'FeedTask', foreign_key: :queue_id
 
   validates :name, 
+    presence: true
+
+  validates :merchant,
+    presence: true
+
+  validates :feed_type, 
     presence: true,
     inclusion: { 
       in: Mws::Apis::Feeds::Feed::Type.syms 
@@ -14,9 +20,6 @@ class FeedQueue < ActiveRecord::Base
     uniqueness: { 
       scope: [ :merchant ] 
     }
-
-  validates :merchant,
-    presence: true
 
   validates :priority,
     presence: true,
@@ -32,8 +35,8 @@ class FeedQueue < ActiveRecord::Base
       greater_than: 0
     }
 
-  def name
-    res = read_attribute(:name)
+  def feed_type
+    res = read_attribute(:feed_type)
     res and res.to_sym
   end
 

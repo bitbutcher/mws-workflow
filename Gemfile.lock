@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/devmode/mws.git
-  revision: c1e6adaebf717b04908534bc954c6d72d657cb5a
+  revision: a8e590b2d464e07671f85e3255be32fad56fae9a
   specs:
     mws (0.0.1)
       hashie

@@ -3,17 +3,18 @@ require 'nokogiri'
 
 class FeedTask < ActiveRecord::Base
 
-  attr_accessible :queue, :sku, :operation_type, :body, :state, :enqueued, :transaction_id
+  attr_accessible :queue, :sku, :operation_type, :body, :transaction, :index, :failure
 
   has_many :feed_task_dependencies, foreign_key: :task_id
   has_many :dependencies, through: :feed_task_dependencies, source: :dependency
 
   belongs_to :queue, class_name: 'FeedQueue'
+  belongs_to :transaction, class_name: 'FeedTransaction'
 
   validates :queue,
     presence: true
 
-  validates :sku
+  validates :sku,
     presence: true
 
   validates :operation_type,
@@ -22,14 +23,18 @@ class FeedTask < ActiveRecord::Base
       in: Mws::Apis::Feeds::Feed::OperationType.syms
     }
 
-  validates :state,
-    presence: true,
-    inclusion: {
-      in: [ :pending, :enqueued, :dequeued, :complete, :failed ]
-    }
-
   validates :body,
     presence: true
+
+  validates :index,
+    numericality: {
+      integer_only: true,
+      greater_than: 0
+    },
+    uniqueness: { 
+      scope: [ :transaction_id ] 
+    },
+    allow_blank: true
 
   def operation_type
     res = read_attribute(:operation_type)
