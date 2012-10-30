@@ -1,7 +1,7 @@
 class PollFeeds < Job
 
   def perform
-    txs = FeedTransaction.where state: :running
+    txs = FeedTransaction.running
     return if txs.empty?
     Mws.connection.feeds.list(ids: txs.map { | tx | tx.identifier }).each do | info |
       if info.status == :done

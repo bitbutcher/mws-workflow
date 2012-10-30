@@ -43,7 +43,7 @@ FeedQueue.create!([
 
 FeedTask.transaction do
 
-  product_queue = FeedQueue.where(feed_type: :product).first
+  product_queue = FeedQueue.type(:product).first
   product = Feeds::Product.new('2634897') do
     tax_code 'A_GEN_TAX'
     name "Rocketfish\u2122 6' In-Wall HDMI Cable"
@@ -66,12 +66,12 @@ FeedTask.transaction do
   end
   product_task = FeedTask.create sku: '2634897', queue: product_queue, operation_type: :update, body: product.to_xml.to_s
 
-  price_queue = FeedQueue.where(feed_type: :price).first
+  price_queue = FeedQueue.type(:price).first
   price = Feeds::PriceListing.new('2634897', 49.99).on_sale(29.99, Time.now, 3.months.from_now)
   price_task = FeedTask.create sku: '2634897', queue: price_queue, operation_type: :update, body: price.to_xml.to_s
   price_task.dependencies << product_task
 
-  image_queue = FeedQueue.where(feed_type: :image).first
+  image_queue = FeedQueue.type(:image).first
   main_image = Feeds::ImageListing.new('2634897', 'http://images.bestbuy.com/BestBuy_US/images/products/2634/2634897_sa.jpg', 'Main')
   main_image_task = FeedTask.create sku: '2634897', queue: image_queue, operation_type: :update, body: main_image.to_xml.to_s
   main_image_task.dependencies << product_task
@@ -79,7 +79,7 @@ FeedTask.transaction do
   alt_image_task = FeedTask.create sku: '2634897', queue: image_queue, operation_type: :update, body: alt_image.to_xml.to_s
   alt_image_task.dependencies << product_task
 
-  shipping_queue = FeedQueue.where(feed_type: :price).first
+  shipping_queue = FeedQueue.type(:override).first
   shipping = Feeds::Shipping.new('2634897') {
     restricted :alaska_hawaii, :standard, :po_box
     adjust 4.99, :usd, :continental_us, :standard
@@ -88,7 +88,7 @@ FeedTask.transaction do
   shipping_task = FeedTask.create sku: '2634897', queue: shipping_queue, operation_type: :update, body: shipping.to_xml.to_s
   shipping_task.dependencies << product_task
 
-  inventory_queue = FeedQueue.where(feed_type: :inventory).first
+  inventory_queue = FeedQueue.type(:inventory).first
   inventory = Feeds::Inventory.new('2634897', quantity: 10, fulfillment_type: :mfn)
   inventory_task = FeedTask.create sku: '2634897', queue: inventory_queue, operation_type: :update, body: inventory.to_xml.to_s
   inventory_task.dependencies << price_task

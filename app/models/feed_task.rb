@@ -36,13 +36,33 @@ class FeedTask < ActiveRecord::Base
     },
     allow_blank: true
 
+  scope :pending, -> {
+    task = arel_table
+    where(transaction_id: nil).where FeedTaskDependency.needed_by(task[:id]).exists
+  }
+
+  scope :ready, -> {
+    task = arel_table
+    where(transaction_id: nil).where FeedTaskDependency.needed_by(task[:id]).exists.not
+  }
+
+  scope :running, -> {
+    tx = FeedTransaction.arel_table
+    joins(:transaction).where tx[:state].eq(:running)
+  }
+
+  scope :complete, -> {
+    tx = FeedTransaction.arel_table
+    joins(:transaction).where tx[:state].eq(:complete)
+  }
+
+  scope :failed, -> {
+    task = arel_table
+    where task[:failure].not_eq(nil)
+  }
+
   def operation_type
     res = read_attribute(:operation_type)
-    res and res.to_sym
-  end
-
-  def state
-    res = read_attribute(:state)
     res and res.to_sym
   end
 

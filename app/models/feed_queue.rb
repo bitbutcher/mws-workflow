@@ -35,6 +35,8 @@ class FeedQueue < ActiveRecord::Base
       greater_than: 0
     }
 
+  scope :type, ->(type) { where(feed_type: type) }
+
   def feed_type
     res = read_attribute(:feed_type)
     res and res.to_sym

@@ -1,5 +1,7 @@
 class FeedTransaction < ActiveRecord::Base
 
+  States = [ :running, :complete, :successful, :has_failures ]
+
   attr_accessible :identifier, :state
 
   has_many :tasks, class_name: 'FeedTask', foreign_key: :transaction_id
@@ -15,8 +17,14 @@ class FeedTransaction < ActiveRecord::Base
   validates :state,
     presence: true,
     inclusion: {
-      in: [ :running, :complete, :successful, :has_failures ]
+      in: States
     }
+
+  States.each do | state |
+    scope state, -> {
+      where state: state
+    }
+  end
 
   def state
     res = read_attribute(:state)

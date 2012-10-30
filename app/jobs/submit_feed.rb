@@ -22,34 +22,11 @@ class SubmitFeed < Job
   private
 
   def select_queue
-    queues = FeedQueue.order(:priority)
-    circle(queues, start_index(queues)) do | queue |
-      tasks = queue.tasks.where(<<-SQL
-        transaction_id is NULL and
-        not exists ( 
-          select task_id from #{FeedTaskDependency.table_name} 
-          where task_id = #{FeedTask.table_name}.id
-        )
-        SQL
-      ).order(:created_at).limit(queue.batch_size)
+    FeedQueue.order('last_drain asc nulls first', :priority).each do | queue |
+      tasks = queue.tasks.ready.order(:created_at).limit(queue.batch_size)
       return [ queue, tasks ] unless tasks.empty?
     end
     return [ nil, nil ]
-  end
-
-  def start_index(queues)
-    last_drained = queues.max do | a, b | 
-      return -1 if a.last_drain.nil?
-      return 1 if b.last_drain.nil?
-      a.last_drain <=> b.last_drain
-    end
-    queues.find_index(last_drained) + 1
-  end
-
-  def circle(collection, start=0)
-    start.upto(start + collection.size - 1) do | index |
-      yield collection[index % collection.size]
-    end
   end
 
 end
