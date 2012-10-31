@@ -4,7 +4,7 @@ class SubmitFeed < Job
 
   def initialize(options)
     @merchant = options[:merchant]
-    @task = [ @merchant, self.class.name.split('::').first ].join ':'
+    @task = [ @merchant, self.class.name.split('::').last ].join ':'
   end
 
   def perform

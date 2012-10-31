@@ -76,7 +76,7 @@ FeedTask.transaction do
       msrp 49.99, :usd
       category :ce
       details {
-        cable_or_adapter {
+        cable_or_adapter {          
           cable_length {
             length 6
             unit_of_measure :feet

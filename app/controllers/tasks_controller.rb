@@ -1,13 +1,14 @@
 class TasksController < ApplicationController
 
   def index
-    @tasks = FeedTask.includes(:queue, :transaction, :dependencies).order('transaction_id, index, created_at').all
+    @tasks = FeedTask.includes(:queue, :transaction, :feed_task_dependencies).order(:created_at).all
 
     respond_to do |format|
       format.html
-      format.json { render json: @tasks.to_json(include: [ :queue, :transaction, :dependencies ], methods: [ :state ]) }
+      format.json do 
+        render json: @tasks
+      end
     end
   end
-
 
 end
