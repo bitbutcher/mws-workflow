@@ -11,7 +11,15 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20121026165606) do
+ActiveRecord::Schema.define(:version => 20121030234403) do
+
+  create_table "batteries", :force => true do |t|
+    t.string   "task",       :null => false
+    t.integer  "capacity",   :null => false
+    t.integer  "charge",     :null => false
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
 
   create_table "feed_queues", :force => true do |t|
     t.string   "name",       :null => false

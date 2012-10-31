@@ -15,7 +15,24 @@ module Clockwork
   end
   
   # The schedule:
-  every 45.seconds, PollFeeds
-  every 1.minute, GetFeedResult
-  every 2.minutes, [SubmitFeed, {merchant: ENV['MWS_MERCHANT']}]
+  merchant = ENV['MWS_MERCHANT']
+
+  every 10.seconds, [ SubmitFeed, { merchant: merchant } ]
+  every 2.minutes, [ Charger, {
+    merchant: merchant,
+    operation: 'SubmitFeed'
+  }]
+
+  every 30.seconds, [ PollFeeds, { merchant: merchant } ]
+  every 45.seconds, [ Charger, {
+    merchant: merchant,
+    operation: 'PollFeeds'
+  }]
+
+  every 10.seconds, [ GetFeedResult, { merchant: merchant } ]
+  every 1.minute, [ Charger, {
+    merchant: merchant,
+    operation: 'GetFeedResult'
+  }]
+
 end

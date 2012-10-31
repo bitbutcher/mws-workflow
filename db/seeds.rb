@@ -3,42 +3,62 @@ require 'mws'
 Feeds = Mws::Apis::Feeds
 Feed = Feeds::Feed
 
+merchant = ENV['MWS_MERCHANT']
+
 FeedQueue.create!([
   {
     name: 'Catalog',
-    merchant: ENV['MWS_MERCHANT'],
+    merchant: merchant,
     feed_type: Feed::Type.PRODUCT.sym,
     priority: 1,
     batch_size: 100
   },
   {
     name: 'Images',
-    merchant: ENV['MWS_MERCHANT'],
+    merchant: merchant,
     feed_type: Feed::Type.IMAGE.sym,
     priority: 1,
     batch_size: 100
   },
   {
     name: 'Pricing',
-    merchant: ENV['MWS_MERCHANT'],
+    merchant: merchant,
     feed_type: Feed::Type.PRICE.sym,
     priority: 1,
     batch_size: 100
   },
   {
     name: 'Shipping',
-    merchant: ENV['MWS_MERCHANT'],
+    merchant: merchant,
     feed_type: Feed::Type.OVERRIDE.sym,
     priority: 1,
     batch_size: 100
   },
   {
     name: 'Inventory',
-    merchant: ENV['MWS_MERCHANT'],
+    merchant: merchant,
     feed_type: Feed::Type.INVENTORY.sym,
     priority: 1,
     batch_size: 100
   }
+])
+
+Battery.create!([
+  {
+    task: [ merchant, :SubmitFeed ].join(':'),
+    capacity: 10,
+    charge: 10
+  },
+  {
+    task: [ merchant, :PollFeeds ].join(':'),
+    capacity: 5,
+    charge: 5
+  },
+  {
+    task: [ merchant, :GetFeedResult ].join(':'),
+    capacity: 10,
+    charge: 10
+  },
 ])
 
 FeedTask.transaction do

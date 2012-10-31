@@ -1,8 +1,13 @@
 class GetFeedResult < Job
 
+  def initialize(options)
+    @merchant = options[:merchant]
+    @task = [ @merchant, self.class.name.split('::').first ].join ':'
+  end
+
   def perform
     tx = FeedTransaction.complete.order(:created_at).first
-    return if tx.nil?
+    return if tx.nil? or Battery.discharge(@task).nil?
     result = Mws.connection.feeds.get(tx.identifier)
     Rails.logger.info "\n\n\n\n"
     Rails.logger.info "Result: #{result.inspect}"
