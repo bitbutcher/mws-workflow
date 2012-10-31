@@ -57,6 +57,6 @@ MwsWorkflow::Application.routes.draw do
   # match ':controller(/:action(/:id))(.:format)'
 
   resources :tasks, only: [ :index ] do 
-    get 'pretty', :on => :collection
+    get 'vis', :on => :collection
   end
 end

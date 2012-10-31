@@ -11,6 +11,7 @@ gem 'haml'
 gem 'therubyracer'
 gem 'less-rails'
 gem 'less-rails-bootstrap'
+gem 'coffee-filter'
 
 group :assets do
   gem 'sass-rails',   '~> 3.2.3'

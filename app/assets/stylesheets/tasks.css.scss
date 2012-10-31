@@ -1,3 +1,78 @@
 // Place all the styles related to the tasks controller here.
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
+
+body {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+}
+
+.container-fluid,
+.row-fluid { height: inherit; }
+
+.queue, .transaction {
+  border: 1px dashed black;
+  border-radius: 10px;
+  width: 120px;
+  padding: 5px;
+  margin: 10px 35px 10px 35px;
+  text-align: center;
+  font-weight: bold;
+
+  .task {
+    margin: 5px;
+  }
+}
+
+.task {
+  border: 2px solid black;
+  border-radius: 20px;
+  width: 100px;
+  min-height: 50px;
+  padding: 5px;
+  margin: 10px 45px 10px 45px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.ready {
+  border: 2px solid gold;
+}
+
+.running {
+  border: 2px solid green;
+}
+
+.complete {
+  border: 2px solid purple;
+}
+
+.successful {
+  border: 2px solid blue;
+}
+
+.failed {
+  border: 2px solid red;
+}
+
+.state {
+  float: left;
+  width: 200px;
+  height: inherit;
+  margin: 0px;
+  padding: 0px;
+  @extend .clearfix;
+  position: relative;
+  border-right: 1px solid black;
+  text-align: center;
+  h4 {
+    margin: 0px;
+    padding: 10px 0px 5px 0px;
+    border-bottom: 1px solid black;
+  }
+}
+
+.highlight {
+  box-shadow: 3px 3px #999;
+}

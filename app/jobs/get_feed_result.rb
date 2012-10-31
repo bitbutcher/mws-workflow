@@ -27,7 +27,7 @@ class GetFeedResult < Job
           message_result = result.message_for task.index
           if message_result.nil?
             FeedTaskDependency.depend_on(task).delete_all
-            task.delete
+            # task.delete
           else 
             tx.state = :has_failures
             task.failure = message_result.description
