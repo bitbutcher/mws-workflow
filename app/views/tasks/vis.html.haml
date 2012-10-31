@@ -1,4 +1,6 @@
-.row-fluid
+%canvas{id: 'dep_canvas'}
+
+#cols.row-fluid
   #pending.state
     %h4 Pending
   #ready.state
@@ -11,6 +13,7 @@
     %h4 Successful
   #failed.state
     %h4 Failed    
+  #batteries
+
 
 = javascript_include_tag "tasks_vis"
-  

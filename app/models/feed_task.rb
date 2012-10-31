@@ -79,6 +79,22 @@ class FeedTask < ActiveRecord::Base
     return body
   end
 
+  def as_json(options=nil)
+    options = {
+      include: { 
+        queue: {
+          only: [ :id, :name, :feed_type ]
+        }, 
+        transaction: {
+          only: [ :id, :identifier, :failure, :state ],
+        }
+      }, 
+      except: [ :body, :queue_id, :transaction_id, :updated_at, :created_at ],
+      methods: [ :state, :dependency_ids ]
+    }
+    super(options)
+  end
+
   def self.enqueue(queue, resource, operation_type, *dependencies)
     task = new sku: resource.sku, queue: queue, operation_type: operation_type, body: resource.to_xml
     dependencies.each do | dependency |
@@ -88,4 +104,7 @@ class FeedTask < ActiveRecord::Base
     task
   end
 
+  def dependency_ids
+    feed_task_dependencies.map { | it | it.dependency_id }
+  end
 end

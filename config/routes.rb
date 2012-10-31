@@ -59,4 +59,6 @@ MwsWorkflow::Application.routes.draw do
   resources :tasks, only: [ :index ] do 
     get 'vis', :on => :collection
   end
+
+  resources :batteries, only: [ :index ]
 end

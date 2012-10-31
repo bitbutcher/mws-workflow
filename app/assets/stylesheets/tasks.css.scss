@@ -34,6 +34,7 @@ body {
   margin: 10px 45px 10px 45px;
   text-align: center;
   font-weight: bold;
+  background-color: white;
 }
 
 .ready {
@@ -75,4 +76,54 @@ body {
 
 .highlight {
   box-shadow: 3px 3px #999;
+}
+
+
+#batteries {
+  float: left;
+  width: 270px;
+  padding: 50px 0px 0px 0px;
+  @extend .clearfix;
+  position: relative;
+  text-align: center;
+
+  .battery {
+    position: relative;
+    border: 2px solid black;
+    border-radius: 9px;
+    width: 250px;
+    height: 50px;
+    margin: 10px;
+
+    background-color: black;
+
+    .segment {
+      float: left;
+      border-left: 1px solid black;  
+      border-right: 1px solid black;  
+      position: absolute;
+      top: 0px;
+      bottom: 0px;
+      border-radius: 5px;
+    }
+    .charged {
+      background-color: lime;
+    }
+    .empty {
+     background-color: red; 
+    }
+  }
+
+  .label {
+    text-align: center;
+    font-weight: bold;
+    background-color: transparent;
+    color: black;
+    margin: auto;
+  }
+}
+
+
+#dep_canvas {
+  position: absolute;
 }
