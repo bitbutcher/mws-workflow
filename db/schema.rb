@@ -14,12 +14,14 @@
 ActiveRecord::Schema.define(:version => 20121030234403) do
 
   create_table "batteries", :force => true do |t|
-    t.string   "task",       :null => false
+    t.string   "device",     :null => false
     t.integer  "capacity",   :null => false
     t.integer  "charge",     :null => false
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
   end
+
+  add_index "batteries", ["device"], :name => "uq_battery_device", :unique => true
 
   create_table "feed_queues", :force => true do |t|
     t.string   "name",       :null => false
@@ -32,12 +34,16 @@ ActiveRecord::Schema.define(:version => 20121030234403) do
     t.datetime "updated_at", :null => false
   end
 
+  add_index "feed_queues", ["merchant", "feed_type"], :name => "uq_feed_queue_merchant_type", :unique => true
+
   create_table "feed_task_dependencies", :force => true do |t|
     t.integer  "task_id",       :null => false
     t.integer  "dependency_id", :null => false
     t.datetime "created_at",    :null => false
     t.datetime "updated_at",    :null => false
   end
+
+  add_index "feed_task_dependencies", ["task_id", "dependency_id"], :name => "uq_feed_task_dep", :unique => true
 
   create_table "feed_tasks", :force => true do |t|
     t.string   "sku",            :null => false
@@ -58,6 +64,9 @@ ActiveRecord::Schema.define(:version => 20121030234403) do
     t.datetime "created_at",              :null => false
     t.datetime "updated_at",              :null => false
   end
+
+  add_index "feed_transactions", ["identifier"], :name => "uq_feed_tx_identifier", :unique => true
+  add_index "feed_transactions", ["state"], :name => "idx_feed_tx_state"
 
   create_table "queue_classic_jobs", :force => true do |t|
     t.string   "q_name"

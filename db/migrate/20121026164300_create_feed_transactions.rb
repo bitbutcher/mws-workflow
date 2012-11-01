@@ -6,5 +6,7 @@ class CreateFeedTransactions < ActiveRecord::Migration
       table.string :failure, null: true
       table.timestamps
     end
+    add_index(:feed_transactions, :identifier, unique: true, name: 'uq_feed_tx_identifier')
+    add_index(:feed_transactions, :state, name: 'idx_feed_tx_state')
   end
 end

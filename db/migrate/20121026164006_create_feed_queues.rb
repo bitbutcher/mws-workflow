@@ -9,5 +9,6 @@ class CreateFeedQueues < ActiveRecord::Migration
       table.datetime :last_drain, null: true
       table.timestamps
     end
+    add_index(:feed_queues, [ :merchant, :feed_type ], unique: true, name: 'uq_feed_queue_merchant_type')
   end
 end

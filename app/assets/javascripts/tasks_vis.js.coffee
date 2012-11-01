@@ -105,7 +105,7 @@ update_batteries = ->
       jQuery('#batteries').append(
         jQuery('<span>')
           .addClass('label')
-          .html(battery.task)
+          .html(battery.device)
       )
       batatery_div = jQuery('<div>')
         .addClass('battery')
