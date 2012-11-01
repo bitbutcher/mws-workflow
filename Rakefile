@@ -10,7 +10,7 @@ require 'queue_classic/tasks'
 MwsWorkflow::Application.load_tasks
 
 namespace :mws do
-
+  desc "Loads some skus into FeedTasks and FeedQueues"
   task workflow: :environment do
     Feeds = Mws::Apis::Feeds
     FeedTask.transaction do
