@@ -107,30 +107,28 @@ update_batteries = ->
           .addClass('label')
           .html(battery.device)
       )
-      batatery_div = jQuery('<div>')
+      battery_div = jQuery('<div>')
         .addClass('battery')
         .appendTo('#batteries')
-      segment_width = 248 / battery.capacity
-      [0...battery.charge].forEach (seg)->
-        batatery_div.append(
-          jQuery('<div>')
-            .addClass('segment')
-            .addClass('charged')
-            .css({
-              left: seg * segment_width,
-              width: "#{segment_width}px"
-            })
-        )
-      [battery.charge...battery.capacity].forEach (seg)->
-        batatery_div.append(
-          jQuery('<div>')
-            .addClass('segment')
-            .addClass('empty')
-            .css({
-              left: seg * segment_width,
-              width: "#{segment_width}px"
-            })
-        )
+      charge = battery.charge / battery.capacity * 100
+      if charge > 50
+        charge_class = 'high' 
+      else if charge > 25
+        charge_class = 'medium' 
+      else
+        charge_class = 'low'
+
+      battery_div
+      .append(
+        jQuery('<div>')
+          .addClass('segment')
+          .addClass(charge_class)
+          .css(width: "#{charge}%")
+      )
+      .append(
+        jQuery('<div>')
+          .addClass('nipple')
+      )
 
   setTimeout update_batteries, 10000
 
