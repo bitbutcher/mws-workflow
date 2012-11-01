@@ -117,7 +117,6 @@ FeedTask.transaction do
     alt_image_task,
     shipping_task
   )
-<<<<<<< HEAD
 
 
   product_task = FeedQueue.type(:product).first.enqueue_update(
