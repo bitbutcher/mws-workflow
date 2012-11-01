@@ -117,6 +117,7 @@ FeedTask.transaction do
     alt_image_task,
     shipping_task
   )
+<<<<<<< HEAD
 
 
   product_task = FeedQueue.type(:product).first.enqueue_update(
@@ -222,5 +223,4 @@ FeedTask.transaction do
     alt_image_task,
     shipping_task
   )
-
 end if FeedTask.all.empty?
