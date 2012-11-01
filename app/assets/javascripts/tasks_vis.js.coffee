@@ -59,7 +59,7 @@ update = ->
             .addClass('queue')
             .html("#{task.queue.name}") 
       outer.append box
-      outer.appendTo "##{task.state}"
+      outer.appendTo "##{task.state} > .viewport"
 
       box.mouseenter do (task, box) ->
         (e) ->

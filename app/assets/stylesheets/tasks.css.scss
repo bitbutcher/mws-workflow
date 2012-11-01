@@ -16,22 +16,17 @@ body {
   border-radius: 10px;
   width: 120px;
   padding: 5px;
-  margin: 10px 35px 10px 35px;
+  margin: 10px 25px 10px 25px;
   text-align: center;
   font-weight: bold;
-
-  .task {
-    margin: 5px;
-  }
 }
 
 .task {
   border: 2px solid black;
   border-radius: 20px;
   width: 100px;
-  min-height: 50px;
   padding: 5px;
-  margin: 10px 45px 10px 45px;
+  margin: 3px;
   text-align: center;
   font-weight: bold;
   background-color: white;
@@ -59,7 +54,7 @@ body {
 
 .state {
   float: left;
-  width: 200px;
+  width: 180px;
   height: inherit;
   margin: 0px;
   padding: 0px;
@@ -71,6 +66,10 @@ body {
     margin: 0px;
     padding: 10px 0px 5px 0px;
     border-bottom: 1px solid black;
+  }
+  .viewport {
+    height: inherit;
+    overflow: scroll;
   }
 }
 
