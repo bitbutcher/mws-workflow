@@ -45,17 +45,17 @@ FeedQueue.create!([
 
 Battery.create!([
   {
-    task: [ merchant, :SubmitFeed ].join(':'),
+    device: [ :SubmitFeed, merchant ].join(':'),
     capacity: 10,
     charge: 10
   },
   {
-    task: [ merchant, :PollFeeds ].join(':'),
+    device: [ :PollFeeds, merchant ].join(':'),
     capacity: 5,
     charge: 5
   },
   {
-    task: [ merchant, :GetFeedResult ].join(':'),
+    device: [ :GetFeedResult, merchant ].join(':'),
     capacity: 10,
     charge: 10
   },

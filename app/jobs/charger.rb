@@ -1,11 +1,11 @@
 class Charger < Job
 
   def initialize(options)
-    @task = [ options[:merchant], options[:operation] ].join ':'
+    @device = [ options[:operation], options[:merchant] ].join ':'
   end
 
   def perform
-    Battery.charge(@task)
+    Battery.charge(@device)
   end
 
 end

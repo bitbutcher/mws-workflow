@@ -4,12 +4,12 @@ class SubmitFeed < Job
 
   def initialize(options)
     @merchant = options[:merchant]
-    @task = [ @merchant, self.class.name.split('::').last ].join ':'
+    @device = [ self.class.name.split('::').last, @merchant ].join ':'
   end
 
   def perform
     queue, tasks = select_queue
-    return if queue.nil? or Battery.discharge(@task).nil?
+    return if queue.nil? or Battery.discharge(@device).nil?
     queue.last_drain = Time.now
     queue.save
     api = Mws::Apis::Feeds::TargetedApi.new Mws.connection.feeds, @merchant, queue.feed_type

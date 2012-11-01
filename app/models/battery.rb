@@ -1,15 +1,15 @@
 class Battery < ActiveRecord::Base
 
-  attr_accessible :capacity, :charge, :task
+  attr_accessible :device, :capacity, :charge
 
   def fully_charged?
     charge >= capacity
   end
 
-  def self.discharge(task, step=1)
+  def self.discharge(device, step=1)
     it = arel_table
     transaction do
-      battery = where(it[:task].eq(task).and(it[:charge].gteq(step))).lock(true).first
+      battery = where(it[:device].eq(device).and(it[:charge].gteq(step))).lock(true).first
       unless battery.nil?
         battery.charge -= step
         battery.save!
@@ -18,10 +18,10 @@ class Battery < ActiveRecord::Base
     end
   end
 
-  def self.charge(task, step=1)
+  def self.charge(device, step=1)
     update_all(
       ['charge = charge + ?', step], 
-      [ 'task = ? and charge < capacity', task ]
+      [ 'device = ? and charge < capacity', device ]
     )
   end
 
