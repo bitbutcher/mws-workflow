@@ -67,8 +67,9 @@ class FeedTask < ActiveRecord::Base
   end
 
   def state
+    return :failed if failure
     if transaction 
-      failure ? :failed : transaction.state
+      transaction.state == :has_errors ? :successful : transaction.state
     else 
       dependencies.empty? ? :ready : :pending
     end

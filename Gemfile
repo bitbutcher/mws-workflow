@@ -21,6 +21,8 @@ end
 
 group :development, :test do
   gem 'rspec-rails'
+  gem 'faraday'
+  gem 'faraday_middleware'
 end
 
 group :test do

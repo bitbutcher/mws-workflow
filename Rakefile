@@ -162,13 +162,72 @@ namespace :mws do
   # end
 
   task :load, [ :file ] => :environment do | t, args |
-    puts "#{args}"
+
+    ce_mapper = Mapping::Mapper.new
+    ce_mapper << {
+      selector: ->(product) {
+        product['details'].any? { | detail | detail['name'].eql? 'Length of Cord' }
+      },
+      rules: -> {
+        cable_or_adapter.cable_length { as_length details.name('Length of Cord') }
+        # cable_or_adapter.cable_length.unit_of_measure :feet
+      }
+    }
+
+    Feeds = Mws::Apis::Feeds
+    open_api = BbyOpen::Api.new ENV['BBY_OPEN_KEY']
     File.open(args[:file]) do | file |
-      file.each { | line | puts line }
+      file.each do | line | 
+        bby_open_product = open_api.get_sku(line.chomp)
+        details = ce_mapper.map bby_open_product
+        unless details.nil?
+          sku = bby_open_product['sku']
+          FeedTask.transaction do
+            product_task = FeedQueue.type(:product).first.enqueue_update(
+              Feeds::Product.new(sku) do
+                upc bby_open_product['upc']
+                name bby_open_product['name']
+                brand bby_open_product['manufacturer']
+                manufacturer bby_open_product['manufacturer']
+                tax_code 'A_GEN_TAX'
+                description bby_open_product['longDescription']
+                bby_open_product['features'].each { | feature | bullet_point feature['feature'] }
+                category :ce
+                details details
+              end  
+            )
+            price_task = FeedQueue.type(:price).first.enqueue_update(
+              Feeds::PriceListing.new(sku, bby_open_product['regularPrice']),
+              product_task
+            )
+            image_queue = FeedQueue.type(:image).first
+            image_tasks = []
+            image_tasks << image_queue.enqueue_update(
+              Feeds::ImageListing.new(sku, bby_open_product['largeImage'], 'Main'), 
+              product_task
+            ) unless bby_open_product['largeImage'].nil?
+            image_tasks << image_queue.enqueue_update(
+              Feeds::ImageListing.new(sku, bby_open_product['alternateViewsImage'], 'PT1'), 
+              product_task
+            ) unless bby_open_product['alternateViewsImage'].nil?
+            shipping_task = FeedQueue.type(:override).first.enqueue_update(
+              Feeds::Shipping.new(sku) {
+                restricted :alaska_hawaii, :standard, :po_box
+                adjust 4.99, :usd, :continental_us, :standard
+                replace 11.99, :usd, :continental_us, :expedited, :street
+              }, 
+              product_task
+            )
+            FeedQueue.type(:inventory).first.enqueue_update(
+              Feeds::Inventory.new(sku, quantity: 10, fulfillment_type: :mfn),
+              price_task,
+              *image_tasks,
+              shipping_task
+            )
+          end
+        end
+      end
     end
-
-     
   end
-
 end
 

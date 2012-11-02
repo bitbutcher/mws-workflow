@@ -26,6 +26,7 @@ module Mapping
     class Target
 
       def initialize(source, target, context=[])
+        # puts source
         @source = source
         @target = target
         @context = context
@@ -61,8 +62,22 @@ module Mapping
       end
 
       def get
-        return @child.get unless @child.nil?
-        @source
+        @child.nil?  ? @source : @child.get
+      end
+
+      def as_length(source)
+        @child = nil
+        match = source.get.match /^(\d+\.?\d*)(.)$/
+        case match[2]
+          when "'"
+            unit = :feet
+          when '"'
+            unit = :inches
+        end
+        @source = {
+          length: match[1],
+          unit_of_measure: unit
+        }
       end
 
       def method_missing(method, *args, &block)
@@ -73,9 +88,10 @@ module Mapping
 
     end
 
-    class ArrayRetriever
+    class ArrayRetriever < Retriever
 
       def initialize(source)
+        super source
         @source = source
       end
 
@@ -99,6 +115,24 @@ module Mapping
             @children << Retriever.new(child[method.to_s])
           end
         end
+      end
+
+    end
+
+
+    class SearchRetriever < Retriever
+
+      def initialize(source, search_param)
+        super source
+        @source = source
+        @search_param = search_param
+      end
+
+      def get
+        return @child.get unless @child.nil?
+        params = @source.keys
+        params.delete @search_param
+        @source[params.first]
       end
 
     end
