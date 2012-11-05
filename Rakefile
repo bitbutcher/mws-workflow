@@ -163,14 +163,23 @@ namespace :mws do
 
   task :load, [ :file ] => :environment do | t, args |
 
-    ce_mapper = Mapping::Mapper.new
-    ce_mapper << {
+    mapper = Mapping::Mapper.new
+    mapper << {
+      category: :ce,
       selector: ->(product) {
-        product['details'].any? { | detail | detail['name'].eql? 'Length of Cord' }
+        not product['details'].empty? and product['class'] == 'AUDIO &#38; VIDEO CABLES'
       },
       rules: -> {
         cable_or_adapter.cable_length { as_length details.name('Length of Cord') }
-        # cable_or_adapter.cable_length.unit_of_measure :feet
+      }
+    }
+    mapper << {
+      category: :wireless,
+      selector: ->(product) {
+        not product['details'].empty? and product['class'] == 'MOBILE PHONE ACCY'
+      },
+      rules: -> {
+        wireless_accessories!.compatible_phone_models { details.name('What model phone does this fit') }
       }
     }
 
@@ -179,8 +188,8 @@ namespace :mws do
     File.open(args[:file]) do | file |
       file.each do | line | 
         bby_open_product = open_api.get_sku(line.chomp)
-        details = ce_mapper.map bby_open_product
-        unless details.nil?
+        prod_category, prod_details = mapper.map bby_open_product
+        unless prod_details.nil?
           sku = bby_open_product['sku']
           FeedTask.transaction do
             product_task = FeedQueue.type(:product).first.enqueue_update(
@@ -192,8 +201,8 @@ namespace :mws do
                 tax_code 'A_GEN_TAX'
                 description bby_open_product['longDescription']
                 bby_open_product['features'].each { | feature | bullet_point feature['feature'] }
-                category :ce
-                details details
+                category prod_category
+                details prod_details
               end  
             )
             price_task = FeedQueue.type(:price).first.enqueue_update(
@@ -212,9 +221,7 @@ namespace :mws do
             ) unless bby_open_product['alternateViewsImage'].nil?
             shipping_task = FeedQueue.type(:override).first.enqueue_update(
               Feeds::Shipping.new(sku) {
-                restricted :alaska_hawaii, :standard, :po_box
-                adjust 4.99, :usd, :continental_us, :standard
-                replace 11.99, :usd, :continental_us, :expedited, :street
+                replace 4.99, :usd, :continental_us, :standard, :street
               }, 
               product_task
             )

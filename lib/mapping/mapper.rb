@@ -12,7 +12,7 @@ module Mapping
 
     def map(source)
       strategy = @strategies.find { |it| it[:selector].call source }
-      self.class.map(source, strategy[:rules]) unless strategy.nil?
+      [strategy[:category], self.class.map(source, strategy[:rules])] unless strategy.nil?
     end
 
     def self.map(source, rules=nil, &rules_block)
@@ -26,36 +26,47 @@ module Mapping
     class Target
 
       def initialize(source, target, context=[])
-        # puts source
         @source = source
         @target = target
         @context = context
       end
 
       def method_missing(method, *args, &block)
+        if method =~ /!$/
+          method = method.to_s.chop.to_sym
+          node_for @context, method
+        end
         return apply_value context, method, args[0] unless args.empty?
-        target = self.class.new @source, @target, [ @context, method ].compact.flatten
-        return target unless block_given?
-
+        return self.class.new @source, @target, [ @context, method ] unless block_given?
         retriever = Retriever.new(@source)
         retriever.instance_exec &block
-        
-        apply_value context, method, retriever.get    
+        apply_value method, retriever.get unless retriever.get.nil?
       end
 
       private 
 
-      def apply_value(context, name, value)
+      def apply_value(name, value)
+        node_for(@context)[name] = value
+      end
+
+      def node_for(*context)
         parent = @target
-        @context.each do | param |
+        context.compact.flatten.each do | param |
           parent = parent.include?(param) ? parent[param] : (parent[param] = {})
         end
-        parent[name] = value
+        parent
       end
 
     end
 
     class Retriever
+
+      Units = {
+        "'" => :feet,
+        '"' => :inches,
+        'm' => :meters,
+        'cm' => :centimeters
+      }
 
       def initialize(source)
         @source = source
@@ -68,15 +79,9 @@ module Mapping
       def as_length(source)
         @child = nil
         match = source.get.match /^(\d+\.?\d*)(.)$/
-        case match[2]
-          when "'"
-            unit = :feet
-          when '"'
-            unit = :inches
-        end
         @source = {
           length: match[1],
-          unit_of_measure: unit
+          unit_of_measure: Units[match[2]] || match[2].to_sym
         }
       end
 
@@ -106,7 +111,7 @@ module Mapping
       def method_missing(method, *args, &block)
         unless args.empty?
           child = @source.find { | child | child[method.to_s] == args[0] }
-          raise "Invalid parameter '#{method}' in context '#{child}'" if child.nil?
+          return @source = nil if child.nil?
           @child = SearchRetriever.new(child,  method.to_s)
         else 
           @children = []
