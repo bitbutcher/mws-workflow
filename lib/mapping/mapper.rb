@@ -36,7 +36,7 @@ module Mapping
           method = method.to_s.chop.to_sym
           node_for @context, method
         end
-        return apply_value context, method, args[0] unless args.empty?
+        return apply_value method, args[0] unless args.empty?
         return self.class.new @source, @target, [ @context, method ] unless block_given?
         retriever = Retriever.new(@source)
         retriever.instance_exec &block

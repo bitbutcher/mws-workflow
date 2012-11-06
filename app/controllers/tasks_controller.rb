@@ -11,4 +11,9 @@ class TasksController < ApplicationController
     end
   end
 
+  def show
+    @task = FeedTask.find params[:id]
+    render json: @task.as_json(include_body: true)
+  end
+
 end

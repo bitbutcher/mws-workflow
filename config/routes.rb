@@ -56,7 +56,7 @@ MwsWorkflow::Application.routes.draw do
   # Note: This route will make all actions in every controller accessible via GET requests.
   # match ':controller(/:action(/:id))(.:format)'
 
-  resources :tasks, only: [ :index ] do 
+  resources :tasks, only: [ :index, :show ] do 
     get 'vis', :on => :collection
   end
 

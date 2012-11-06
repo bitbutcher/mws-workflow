@@ -1,3 +1,5 @@
+#= require jade
+
 draw_line = (context, from, to) ->
   context.beginPath()
   context.moveTo from.x, from.y
@@ -35,29 +37,52 @@ determine_anchors = (from, to) ->
       }
     ]
     
+task_template = jade.compile '''
+  - var icons = {update: 'arrow-up', delete: 'remove'}
+  .task(id="task_#{id}", class=state)
+    i(class="icon-#{icons[operation_type]}")
+    span=sku
+'''
+
+transaction_template = jade.compile '''
+  .transaction(id="#{transaction.identifier}_#{state}")
+    div=queue.name
+    div=transaction.identifier
+'''
+
+queue_template = jade.compile '''
+  .queue(id="#{queue.name}_#{state}")
+    div=queue.name
+'''
+
+modal_body_template = jade.compile '''
+  pre.prettyprint=body
+  .failure=failure
+'''
+
+
 update = ->
   jQuery.getJSON '/tasks', (data) ->
     jQuery('.task, .transaction, .queue').remove()
     for task in data
-      box = jQuery('<div>')
-        .attr('id', "task_#{task.id}")
-        .addClass('task')
-        .addClass(task.state)
-        .html(task.sku + '<br/>' + task.operation_type)
+      box = jQuery(task_template(task))
+        .click do(task) -> 
+          (e) ->
+            modal = jQuery('#task_modal')
+            modal.find('.title').html "#{task.sku} - #{task.operation_type}"
+            body = modal.find('.modal-body').html('<img src="/assets/ajax-loader.gif"/>')
+            modal.modal('toggle')
+            jQuery.getJSON "/tasks/#{task.id}", (task) ->
+              body.html modal_body_template(task)
+              
       if task.transaction?
         outer = jQuery "##{task.transaction.identifier}_#{task.state}"
         unless outer.length > 0
-          outer = jQuery('<div>')
-            .attr('id', "#{task.transaction.identifier}_#{task.state}")
-            .addClass('transaction')
-            .html("#{task.queue.name}<br />#{task.transaction.identifier}")
+          outer = jQuery transaction_template(task)
       else
         outer = jQuery "##{task.queue.name}_#{task.state}"
         unless outer.length > 0
-          outer = jQuery('<div>')
-            .attr('id', "#{task.queue.name}_#{task.state}")
-            .addClass('queue')
-            .html("#{task.queue.name}") 
+          outer = jQuery queue_template(task)
       outer.append box
       outer.appendTo "##{task.state} > .viewport"
 
@@ -98,37 +123,31 @@ update = ->
 jQuery ->
   update()
 
+
+battery_template = jade.compile '''
+  span.label=device
+  .battery
+    .charge(class=charge.class, style="width: #{charge.percent}%")
+    .nipple
+'''
+
+class_for = (percent) ->
+  return 'high' if percent > 50
+  return 'medium' if percent > 25
+  return 'low'
+
+charge_for = (battery) ->
+  percent = battery.charge / battery.capacity * 100 
+  amount: battery.charge
+  percent: percent
+  class: class_for percent
+
 update_batteries = ->
   jQuery.getJSON '/batteries', (data) ->
     jQuery('.battery, .label').remove()
     data.forEach (battery) ->
-      jQuery('#batteries').append(
-        jQuery('<span>')
-          .addClass('label')
-          .html(battery.device)
-      )
-      battery_div = jQuery('<div>')
-        .addClass('battery')
-        .appendTo('#batteries')
-      charge = battery.charge / battery.capacity * 100
-      if charge > 50
-        charge_class = 'high' 
-      else if charge > 25
-        charge_class = 'medium' 
-      else
-        charge_class = 'low'
-
-      battery_div
-      .append(
-        jQuery('<div>')
-          .addClass('segment')
-          .addClass(charge_class)
-          .css(width: "#{charge}%")
-      )
-      .append(
-        jQuery('<div>')
-          .addClass('nipple')
-      )
+      battery.charge = charge_for battery
+      jQuery(battery_template(battery)).appendTo('#batteries')
 
   setTimeout update_batteries, 10000
 

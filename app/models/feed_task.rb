@@ -81,6 +81,8 @@ class FeedTask < ActiveRecord::Base
   end
 
   def as_json(options=nil)
+    except = [ :queue_id, :transaction_id, :updated_at, :created_at ]
+    except << :body unless options and options[:include_body]
     options = {
       include: { 
         queue: {
@@ -90,7 +92,7 @@ class FeedTask < ActiveRecord::Base
           only: [ :id, :identifier, :failure, :state ],
         }
       }, 
-      except: [ :body, :queue_id, :transaction_id, :updated_at, :created_at ],
+      except: except,
       methods: [ :state, :dependency_ids ]
     }
     super(options)
