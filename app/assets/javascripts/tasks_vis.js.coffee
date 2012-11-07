@@ -15,27 +15,9 @@ draw_line = (context, from, to) ->
 
 determine_anchors = (from, to) ->
   if from.y > to.y and to.x <= from.x
-    [
-      { 
-        x: from.x + from.width / 2, 
-        y: from.y
-      },
-      { 
-        x: to.x + to.width / 2, 
-        y: to.y + to.height
-      }
-    ]
+    [ { x: from.x + from.width / 2, y: from.y }, { x: to.x + to.width / 2, y: to.y + to.height } ]
   else
-    [
-      {
-        x: from.x + from.width, 
-        y: from.y + (from.height / 2)
-      }, 
-      { 
-        x: to.x, 
-        y: to.y + (to.height / 2)
-      }
-    ]
+    [ { x: from.x + from.width, y: from.y + (from.height / 2) }, { x: to.x, y: to.y + (to.height / 2) }]
     
 task_template = jade.compile '''
   - var icons = {update: 'arrow-up', delete: 'remove'}
@@ -60,69 +42,64 @@ modal_body_template = jade.compile '''
   .failure=failure
 '''
 
+find_or_create = (selector, create_callback) ->
+  element = jQuery selector
+  element = jQuery create_callback() unless element.length
+  element
 
-update = ->
+task_container = (task) ->
+  if task.transaction?
+    find_or_create "##{task.transaction.identifier}_#{task.state}", ->
+      jQuery transaction_template(task)
+  else
+    find_or_create "##{task.queue.name}_#{task.state}", ->
+      jQuery queue_template(task)
+
+update_tasks = ->
   jQuery.getJSON '/tasks', (data) ->
-    jQuery('.task, .transaction, .queue').remove()
+    jQuery('.transaction, .queue').remove()
     for task in data
-      box = jQuery(task_template(task))
-        .click do(task) -> 
-          (e) ->
-            modal = jQuery('#task_modal')
-            modal.find('.title').html "#{task.sku} - #{task.operation_type}"
-            body = modal.find('.modal-body').html('<img src="/assets/ajax-loader.gif"/>')
-            modal.modal('toggle')
-            jQuery.getJSON "/tasks/#{task.id}", (task) ->
-              body.html modal_body_template(task)
-              
-      if task.transaction?
-        outer = jQuery "##{task.transaction.identifier}_#{task.state}"
-        unless outer.length > 0
-          outer = jQuery transaction_template(task)
-      else
-        outer = jQuery "##{task.queue.name}_#{task.state}"
-        unless outer.length > 0
-          outer = jQuery queue_template(task)
-      outer.append box
-      outer.appendTo "##{task.state} > .viewport"
-
-      box.mouseenter do (task, box) ->
-        (e) ->
-          canvas = jQuery('#dep_canvas').get(0)
-          context = canvas.getContext '2d'
-          context.lineWidth = 2
-          context.strokeStyle = 'gray'
-          task.dependency_ids.forEach (dependency) ->
-            dep = jQuery("#task_#{dependency}").addClass 'highlight'
-            draw_line context, determine_anchors(
-              { 
-                x: box.offset().left, 
-                y:box.offset().top, 
-                width: box.outerWidth(), 
-                height: box.outerHeight()
-              }, 
-              {
-                x: dep.offset().left, 
-                y: dep.offset().top, 
-                width: dep.outerWidth(), 
-                height: dep.outerHeight()
-              }
-            )...
-
-          box.one 'mouseleave', (e) ->
-            jQuery('.highlight').removeClass 'highlight'
-            context.clearRect 0, 0, canvas.width, canvas.height
+      do(task) -> 
+        task_container(task)
+          .appendTo("##{task.state} > .viewport")
+          .append(
+            find_or_create("#task_#{task.id}", -> task_template(task))
+              .click (e) ->
+                  modal = jQuery('#task_modal')
+                  modal.find('.title').html "#{task.sku} - #{task.operation_type}"
+                  modal.find('.modal-body').html ''
+                  modal.find('.modal-footer').show()
+                  modal.modal('toggle')
+                  jQuery.getJSON "/tasks/#{task.id}", (task) ->
+                    modal.find('.modal-body').html modal_body_template(task)
+                    modal.find('.modal-footer').hide()
+              .mouseenter((e) ->
+                box = jQuery(@)
+                canvas = jQuery('#dep_canvas').get(0)
+                context = canvas.getContext '2d'
+                context.lineWidth = 2
+                context.strokeStyle = 'gray'
+                task.dependency_ids.forEach (dependency) ->
+                  dep = jQuery("#task_#{dependency}").addClass 'highlight'
+                  draw_line context, determine_anchors(
+                    { x: box.offset().left, y:box.offset().top, width: box.outerWidth(), height: box.outerHeight()}, 
+                    { x: dep.offset().left, y: dep.offset().top, width: dep.outerWidth(), height: dep.outerHeight()}
+                  )...
+                box.one 'mouseleave', (e) ->
+                  jQuery('.highlight').removeClass 'highlight'
+                  context.clearRect 0, 0, canvas.width, canvas.height
+            )
+          )
 
   jQuery('#dep_canvas')
     .attr({
       width: jQuery('#cols').width(),
       height: jQuery('#cols').height()
     })
-  setTimeout update, 10000
+  setTimeout update_tasks, 10000
 
 jQuery ->
-  update()
-
+  update_tasks()
 
 battery_template = jade.compile '''
   span.label=device
