@@ -61,11 +61,15 @@ module Mapping
 
     class Retriever
 
-      Units = {
+      DistanceUnits = {
         "'" => :feet,
         '"' => :inches,
         'm' => :meters,
         'cm' => :centimeters
+      }
+
+      WeightUnits = {
+        'oz.' => :ounces
       }
 
       def initialize(source)
@@ -76,13 +80,21 @@ module Mapping
         @child.nil?  ? @source : @child.get
       end
 
-      def as_length(source)
+      def as_distance(source)
         @child = nil
-        match = source.get.match /^(\d+\.?\d*)(.)$/
-        @source = {
-          length: match[1],
-          unit_of_measure: Units[match[2]] || match[2].to_sym
-        }
+        match = source.get.match /^(\d+\.?\d*)\s*(.)$/
+        @source = Mws::Distance match[1], DistanceUnits[match[2]] || match[2].to_sym
+      end
+
+      def as_weight(source)
+        @child = nil
+        match = source.get.match /^(\d+\.?\d*)\s*(.)$/
+        @source = Mws::Weight match[1], WeightUnits[match[2]] || match[2].to_sym
+      end
+
+      def as_money(source)
+        @child = nil
+        @source = Mws::Money source
       end
 
       def method_missing(method, *args, &block)
