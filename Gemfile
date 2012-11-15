@@ -32,4 +32,5 @@ group :test do
   gem 'rack-test'
   gem 'database_cleaner'
   gem 'factory_girl'
+  gem 'shoulda', :require => false
 end

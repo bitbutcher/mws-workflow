@@ -20,7 +20,7 @@ class FeedTask < ActiveRecord::Base
   validates :operation_type,
     presence: true,
     inclusion: {
-      in: Mws::Apis::Feeds::Feed::OperationType.syms
+      in: Mws::Feed::Message::OperationType.syms
     }
 
   validates :body,
