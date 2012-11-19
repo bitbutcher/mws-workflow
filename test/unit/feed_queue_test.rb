@@ -1,106 +1,92 @@
 require 'test_helper'
 
-class TestResource
-
-  attr_reader :sku
-
-  def initialize(sku)
-    @sku = sku
-  end
-
-  def to_xml
-    '<Resource/>'
-  end
-
-end
-
 class FeedQueueTest < ActiveSupport::TestCase
 
   context '.create' do
   
     should 'be able to create a valid product' do
-      queue = FeedQueue.create! name: :product, feed_type: :product, merchant: '12124asdasdasd', priority: 1, batch_size: 100
+      queue = create :feed_queue
       assert queue.valid?
       assert_equal :product, queue.name
       assert_equal :product, queue.feed_type
-      assert_equal '12124asdasdasd', queue.merchant
+      assert_equal '123123213', queue.merchant
       assert_equal 1, queue.priority
       assert_equal 100, queue.batch_size
     end    
 
     should 'require a name' do
       assert_raises ActiveRecord::RecordInvalid do
-        FeedQueue.create! feed_type: :product, merchant: '12124asdasdasd', priority: 1, batch_size: 100
+        create :feed_queue, name: nil
       end
     end
 
     should 'require a feed type' do
       assert_raises ActiveRecord::RecordInvalid do
-        FeedQueue.create! name: :product, merchant: '12124asdasdasd', priority: 1, batch_size: 100
+        create :feed_queue, feed_type: nil
       end
     end
 
     should 'require a valid feed type' do
       assert_raises ActiveRecord::RecordInvalid do
-        FeedQueue.create! name: :product, feed_type: :super_cool_feed_type, merchant: '12124asdasdasd', priority: 1, batch_size: 100
+        create :feed_queue, feed_type: :super_cool_feed_type
       end
       Mws::Feed::Type.syms.each do | sym |
-        assert_equal sym, FeedQueue.create!(name: :product, feed_type: sym, merchant: '12124asdasdasd', priority: 1, batch_size: 100).feed_type
+        assert_equal sym, create(:feed_queue, feed_type: sym).feed_type
       end
     end
 
     should 'require a unique feed type per merchant' do
-      FeedQueue.create! name: :product, feed_type: :product, merchant: '12124asdasdasd', priority: 1, batch_size: 100
+      create :feed_queue
       assert_raises ActiveRecord::RecordInvalid do
-        FeedQueue.create! name: :product, feed_type: :product, merchant: '12124asdasdasd', priority: 1, batch_size: 100
+        create :feed_queue
       end
-      assert FeedQueue.create!(name: :product, feed_type: :product, merchant: 'asdasdasd12124', priority: 1, batch_size: 100).valid?
+      create :feed_queue, merchant: 'asdasdasd12124'
     end    
 
     should 'require a merchant' do
       assert_raises ActiveRecord::RecordInvalid do
-        FeedQueue.create! name: :product, feed_type: :product, priority: 1, batch_size: 100
+        create :feed_queue, merchant: nil
       end
     end
 
     should 'require a priority' do
       assert_raises ActiveRecord::RecordInvalid do
-        FeedQueue.create! name: :product, feed_type: :product, merchant: '12124asdasdasd', batch_size: 100
+        create :feed_queue, priority: nil
       end
     end
 
     should 'require an integer priority' do
       assert_raises ActiveRecord::RecordInvalid do
-        FeedQueue.create! name: :product, feed_type: :product, merchant: '12124asdasdasd', priority: 'f', batch_size: 100
+        create :feed_queue, priority: 'f'
       end
       assert_raises ActiveRecord::RecordInvalid do
-        FeedQueue.create! name: :product, feed_type: :product, merchant: '12124asdasdasd', priority: :f, batch_size: 100
+        create :feed_queue, priority: :f
       end
       assert_raises ActiveRecord::RecordInvalid do
-        FeedQueue.create! name: :product, feed_type: :product, merchant: '12124asdasdasd', priority: 1.0, batch_size: 100
+        create :feed_queue, priority: 1.0
       end
-      FeedQueue.create! name: :product, feed_type: :product, merchant: '12124asdasdasd', priority: '1', batch_size: 100
-      FeedQueue.create! name: :image, feed_type: :image, merchant: '12124asdasdasd', priority: 1, batch_size: 100
+      create :feed_queue, priority: '1'
+      create :image_queue, priority: 1
     end
 
     should 'require a batch_size' do
       assert_raises ActiveRecord::RecordInvalid do
-        FeedQueue.create! name: :product, feed_type: :product, merchant: '12124asdasdasd', priority: 1
+        create :feed_queue, batch_size: nil
       end
     end
 
     should 'require an integer batch_size' do
       assert_raises ActiveRecord::RecordInvalid do
-        FeedQueue.create! name: :product, feed_type: :product, merchant: '12124asdasdasd', priority: 1, batch_size: 'f'
+        create :feed_queue, batch_size: 'f'
       end
       assert_raises ActiveRecord::RecordInvalid do
-        FeedQueue.create! name: :product, feed_type: :product, merchant: '12124asdasdasd', priority: 1, batch_size: :f
+        create :feed_queue, batch_size: :f
       end
       assert_raises ActiveRecord::RecordInvalid do
-        FeedQueue.create! name: :product, feed_type: :product, merchant: '12124asdasdasd', priority: 1, batch_size: 100.0
+        create :feed_queue, batch_size: 100.0
       end
-      FeedQueue.create! name: :product, feed_type: :product, merchant: '12124asdasdasd', priority: 1, batch_size: '100'
-      FeedQueue.create! name: :imgage, feed_type: :image, merchant: '12124asdasdasd', priority: 1, batch_size: 100
+      create :feed_queue, batch_size: '100'
+      create :image_queue, batch_size: 100
     end
 
   end
@@ -108,14 +94,14 @@ class FeedQueueTest < ActiveSupport::TestCase
   context 'scopes' do
 
     should 'support lookup via a feed type scope' do
-      product_q = FeedQueue.create! name: :product, feed_type: :product, merchant: '12124asdasdasd', priority: 1, batch_size: 100
-      image_q = FeedQueue.create! name: :image, feed_type: :image, merchant: '12124asdasdasd', priority: 1, batch_size: 100
-      price_q = FeedQueue.create! name: :price, feed_type: :price, merchant: '12124asdasdasd', priority: 1, batch_size: 100
-      override_q = FeedQueue.create! name: :override, feed_type: :override, merchant: '12124asdasdasd', priority: 1, batch_size: 100
+      product_q = create :product_queue
+      image_q = create :image_queue
+      price_q = create :price_queue
+      override_q = create :override_queue
       inventory_qs = []
-      inventory_qs << FeedQueue.create!(name: :inventory, feed_type: :inventory, merchant: '12124asdasdasd', priority: 1, batch_size: 100)
-      inventory_qs << FeedQueue.create!(name: :inventory, feed_type: :inventory, merchant: 'dsfasfdasf', priority: 1, batch_size: 100)
-      inventory_qs << FeedQueue.create!(name: :inventory, feed_type: :inventory, merchant: 'adfasdf', priority: 1, batch_size: 100)
+      inventory_qs << create(:inventory_queue, merchant: '12124asdasdasd')
+      inventory_qs << create(:inventory_queue, merchant: 'dsfasfdasf')
+      inventory_qs << create(:inventory_queue, merchant: 'adfasdf')
 
        assert_equal product_q, FeedQueue.type(:product).first
        assert_equal image_q, FeedQueue.type(:image).first
@@ -130,16 +116,16 @@ class FeedQueueTest < ActiveSupport::TestCase
       merchant1 = '12124asdasdasd'
       merchant2 = 'dsfasfdasf'
       merchant3 = 'adfasdf'
-      product_q1 = FeedQueue.create! name: :product, feed_type: :product, merchant: merchant1, priority: 1, batch_size: 100
-      product_q2 = FeedQueue.create! name: :product, feed_type: :product, merchant: merchant2, priority: 1, batch_size: 100
-      product_q3 = FeedQueue.create! name: :product, feed_type: :product, merchant: merchant3, priority: 1, batch_size: 100
-      image_q = FeedQueue.create! name: :image, feed_type: :image, merchant: merchant1, priority: 1, batch_size: 100
-      price_q = FeedQueue.create! name: :price, feed_type: :price, merchant: merchant1, priority: 1, batch_size: 100
-      price_q2 = FeedQueue.create! name: :price, feed_type: :price, merchant: merchant2, priority: 1, batch_size: 100
-      override_q = FeedQueue.create! name: :override, feed_type: :override, merchant: merchant1, priority: 1, batch_size: 100
-      inventory_q1 = FeedQueue.create!(name: :inventory, feed_type: :inventory, merchant: merchant1, priority: 1, batch_size: 100)
-      inventory_q2 = FeedQueue.create!(name: :inventory, feed_type: :inventory, merchant: merchant2, priority: 1, batch_size: 100)
-      inventory_q3 = FeedQueue.create!(name: :inventory, feed_type: :inventory, merchant: merchant3, priority: 1, batch_size: 100)
+      product_q1 = create :product_queue, merchant: merchant1
+      product_q2 = create :product_queue, merchant: merchant2
+      product_q3 = create :product_queue,  merchant: merchant3
+      image_q = create :image_queue, merchant: merchant1
+      price_q = create :price_queue, merchant: merchant1
+      price_q2 = create :price_queue, merchant: merchant2
+      override_q = create :override_queue, merchant: merchant1
+      inventory_q1 = create :inventory_queue,  merchant: merchant1
+      inventory_q2 = create :inventory_queue,  merchant: merchant2
+      inventory_q3 = create :inventory_queue,  merchant: merchant3
 
       assert_contains_all [product_q1, image_q, price_q, override_q, inventory_q1], FeedQueue.merchant(merchant1)
       assert_contains_all [product_q2, price_q2, inventory_q2], FeedQueue.merchant(merchant2)
@@ -147,62 +133,75 @@ class FeedQueueTest < ActiveSupport::TestCase
       assert_empty FeedQueue.merchant('blahh')
     end
 
+    should 'support chaining scopes' do
+
+      merchant1 = '12124asdasdasd'
+      merchant2 = 'dsfasfdasf'
+      merchant3 = 'adfasdf'
+      product_q1 = create :product_queue, merchant: merchant1
+      product_q2 = create :product_queue, merchant: merchant2
+      product_q3 = create :product_queue,  merchant: merchant3
+      image_q = create :image_queue, merchant: merchant1
+      price_q = create :price_queue, merchant: merchant1
+      price_q2 = create :price_queue, merchant: merchant2
+      override_q = create :override_queue, merchant: merchant1
+      inventory_q1 = create :inventory_queue,  merchant: merchant1
+      inventory_q2 = create :inventory_queue,  merchant: merchant2
+      inventory_q3 = create :inventory_queue,  merchant: merchant3
+
+      assert_equal [product_q1], FeedQueue.merchant(merchant1).type(:product)
+      assert_equal [inventory_q1], FeedQueue.merchant(merchant1).type(:inventory)
+
+    end
+
   end
 
   context '#enqueue' do
+    setup do
+      @queue = create :feed_queue
+    end
 
     should 'support enquing a resource update' do 
-      queue = FeedQueue.create! name: :product, feed_type: :product, merchant: 'adfasdf', priority: 1, batch_size: 100
-      task = queue.enqueue_update TestResource.new('1234')
+      task = @queue.enqueue_update TestResource.new('1234')
       assert_not_nil task 
-      assert_equal queue, task.queue
+      assert_equal @queue, task.queue
       assert_equal :update, task.operation_type
     end
 
     should 'support enquing a resource delete' do 
-      queue = FeedQueue.create! name: :product, feed_type: :product, merchant: 'adfasdf', priority: 1, batch_size: 100
-      task = queue.enqueue_delete TestResource.new('1234')
+      task = @queue.enqueue_delete TestResource.new('1234')
       assert_not_nil task 
-      assert_equal queue, task.queue
+      assert_equal @queue, task.queue
       assert_equal :delete, task.operation_type
     end
 
   end
 
   context '#tasks' do
+    setup do
+      @queue = create :feed_queue
+    end
 
     should 'returns queued tasks' do
-      queue = FeedQueue.new name: :product, feed_type: :product, merchant: 'adfasdf', priority: 1, batch_size: 100
       tasks = []
-      tasks << queue.enqueue_update(TestResource.new('1234'))
-      tasks << queue.enqueue_update(TestResource.new('123456'))
-      tasks << queue.enqueue_delete(TestResource.new('12345678'))
+      tasks << @queue.enqueue_update(TestResource.new('1234'))
+      tasks << @queue.enqueue_update(TestResource.new('123456'))
+      tasks << @queue.enqueue_delete(TestResource.new('12345678'))
 
-      assert_contains_all tasks, queue.tasks
+      assert_contains_all tasks, @queue.tasks
 
     end
 
     should 'returns ready and pending tasks' do
-      queue = FeedQueue.new name: :product, feed_type: :product, merchant: 'adfasdf', priority: 1, batch_size: 100
       tasks = []
-      tasks << queue.enqueue_update(TestResource.new('1234'))
-      tasks << queue.enqueue_update(TestResource.new('123456'))
-      tasks << queue.enqueue_delete(TestResource.new('12345678'), tasks[0])
+      tasks << @queue.enqueue_update(TestResource.new('1234'))
+      tasks << @queue.enqueue_update(TestResource.new('123456'))
+      tasks << @queue.enqueue_delete(TestResource.new('12345678'), tasks[0])
 
-
-      assert_contains_all [tasks[0], tasks[1]], queue.tasks.ready
-      assert_contains_all [tasks[2]], queue.tasks.pending
+      assert_contains_all [tasks[0], tasks[1]], @queue.tasks.ready
+      assert_contains_all [tasks[2]], @queue.tasks.pending
     end
 
-  end
-
-  def assert_contains_all(expected, actual)
-    tmp = expected.dup
-    actual.each do | it |
-      assert_contains expected, it
-      tmp.delete it
-    end
-    assert_empty tmp
   end
 
 end

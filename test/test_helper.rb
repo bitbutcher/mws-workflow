@@ -5,6 +5,8 @@ require 'shoulda'
 require 'shoulda-context'
 require 'shoulda-matchers'
 
+FactoryGirl.find_definitions
+
 class ActiveSupport::TestCase
   # Setup all fixtures in test/fixtures/*.(yml|csv) for all tests in alphabetical order.
   #
@@ -13,4 +15,30 @@ class ActiveSupport::TestCase
   fixtures :all
 
   # Add more helper methods to be used by all tests here...
+
+  include FactoryGirl::Syntax::Methods
+
+  def assert_contains_all(expected, actual)
+    tmp = expected.dup
+    actual.each do | it |
+      assert_contains expected, it
+      tmp.delete it
+    end
+    assert_empty tmp
+  end
+end
+
+
+class TestResource
+
+  attr_reader :sku
+
+  def initialize(sku)
+    @sku = sku
+  end
+
+  def to_xml
+    '<Resource/>'
+  end
+
 end

@@ -28,7 +28,7 @@ class FeedTask < ActiveRecord::Base
 
   validates :index,
     numericality: {
-      integer_only: true,
+      only_integer: true,
       greater_than: 0
     },
     uniqueness: { 
@@ -54,6 +54,11 @@ class FeedTask < ActiveRecord::Base
   scope :complete, -> {
     tx = FeedTransaction.arel_table
     joins(:transaction).where tx[:state].eq(:complete)
+  }
+
+  scope :successful, -> {
+    tx = FeedTransaction.arel_table
+    joins(:transaction).where tx[:state].eq(:successful)
   }
 
   scope :failed, -> {
