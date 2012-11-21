@@ -15,7 +15,7 @@ class FeedQueue < ActiveRecord::Base
   validates :feed_type, 
     presence: true,
     inclusion: { 
-      in: Mws::Apis::Feeds::Feed::Type.syms 
+      in: Mws::Feed::Type.syms
     }, 
     uniqueness: { 
       scope: [ :merchant ] 
